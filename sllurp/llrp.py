@@ -980,7 +980,9 @@ class LLRPClient(object):
             'AccessSpecStopTrigger': accessStopParam,
             'AccessCommand': {
                 'TagSpecParameter': {
-                    'C1G2TargetTag': targetParam,
+                    'C1G2TagSpec': {
+                        'C1G2TargetTag': targetParam,
+                    }
                 },
                 'OpSpecParameter': [],
             },

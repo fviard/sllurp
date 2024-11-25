@@ -1662,7 +1662,7 @@ Message_struct['DISABLE_ACCESSSPEC_RESPONSE'] = {
 }
 
 
-def encode_AccessSpecStopTrigger(par):
+def encode_AccessSpecStopTrigger(par, param_info):
     return ubyte_ushort_pack(int(par['AccessSpecStopTriggerType']),
                              int(par['OperationCountValue']))
 
@@ -1678,14 +1678,19 @@ Param_struct['AccessSpecStopTrigger'] = {
 
 
 def encode_AccessCommand(par, param_info):
+    # TagSpec is a parameter that can be one of:
+    # C1G2TagSpec
+    # Only one TagSpecParameter is allowed
+    tagSpec = par['TagSpecParameter']
+    opName, spec_info = next(iter(tagSpec.items()))
+    data = encode_param(opName, spec_info)
 
-    # OpSpecParameter can be one of:
+    # OpSpecParameter is a list with a parameter that can be one of:
     # C1G2 OpSpec or a ClientRequestOpSpec or a custom parameter
     opSpecs = par['OpSpecParameter']
-
-    data = b''
-    for opName, spec_info in opSpecs:
-        data += encode_param(opName, spec_info)
+    for operation in opSpecs:
+        for opName, spec_info in operation.items():
+            data += encode_param(opName, spec_info)
 
     return encode_all_parameters(par, param_info, data)
 
@@ -1693,11 +1698,11 @@ def encode_AccessCommand(par, param_info):
 Param_struct['AccessCommand'] = {
     'type': 209,
     'fields': [
+
+        # Virtual parameter to have one of the specifically allowed parameters for TagSpec
+        'TagSpecParameter',
         # Virtual parameter to have an ordered list of OpSpec
         'OpSpecParameter'
-    ],
-    'o_fields': [
-        'C1G2TagSpec',
     ],
     'encode': encode_AccessCommand
 }
