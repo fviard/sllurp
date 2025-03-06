@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Reader Control</title>
+    <style>
+        .button-group {
+            margin: 20px 0;
+        }
+
+        button {
+            margin-right: 10px;
+            padding: 8px 16px;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .connection-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .connected {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+    <script>
+        let ws;
+
+        function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:4000/ws');
+
+            ws.onopen = function () {
+                console.log('WebSocket Connected');
+                document.getElementById('wsStatus').textContent = 'WebSocket: Connected';
+                document.getElementById('wsStatus').className = 'connection-status connected';
+            };
+
+            ws.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                document.getElementById("tagList").innerText = JSON.stringify(data.tags, null, 2);
+            };
+
+            ws.onclose = function () {
+                console.log('WebSocket Disconnected');
+                document.getElementById('wsStatus').textContent = 'WebSocket: Disconnected';
+                document.getElementById('wsStatus').className = 'connection-status disconnected';
+                // Try to reconnect after 5 seconds
+                setTimeout(connectWebSocket, 5000);
+            };
+
+            ws.onerror = function (error) {
+                console.error('WebSocket Error:', error);
+            };
+        }
+
+        // Start WebSocket connection when page loads
+        window.onload = connectWebSocket;
+
+        async function startReader() {
+            try {
+                let response = await fetch("http://localhost:4000/start");
+                let data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error("Error starting reader:", error);
+                alert("Failed to start reader");
+            }
+        }
+
+        async function getTags() {
+            try {
+                let response = await fetch("http://localhost:4000/last-read");
+                let data = await response.json();
+                document.getElementById("tagList").innerText = JSON.stringify(data.tags, null, 2);
+            } catch (error) {
+                console.error("Error fetching tags:", error);
+                alert("Failed to fetch tags");
+            }
+        }
+
+        async function clearTags() {
+            try {
+                let response = await fetch("http://localhost:4000/clear", {
+                    method: 'GET'
+                });
+                let data = await response.json();
+                document.getElementById("tagList").innerText = "No tags yet...";
+                alert(data.message);
+            } catch (error) {
+                console.error("Error clearing tags:", error);
+                alert("Failed to clear tags");
+            }
+        }
+
+        async function stopReader() {
+            try {
+                let response = await fetch("http://localhost:4000/stop", {
+                    method: 'GET'
+                });
+                let data = await response.json();
+                document.getElementById("tagList").innerText = JSON.stringify(data.tags, null, 2);
+                alert('Reader stopped');
+            } catch (error) {
+                console.error("Error stopping reader:", error);
+                alert("Failed to stop reader");
+            }
+        }
+
+        async function getState() {
+            try {
+                let response = await fetch("http://localhost:4000/state", {
+                    method: 'GET'
+                });
+                let data = await response.json();
+                alert(data.state);
+            } catch (error) {
+                console.error("Error getting state:", error);
+                alert("Failed to fetch reader state");
+            }
+        }
+        async function getReaderStatus() {
+            try {
+                let response = await fetch("http://localhost:4000/status", {
+                    method: 'GET'
+                });
+                let data = await response.json();
+                alert(data.status);
+            } catch (error) {
+                console.error("Error fetching reader status:", error);
+                alert("Failed to fetch reader status");
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h2>RFID Reader Control</h2>
+    <div id="wsStatus" class="connection-status disconnected">Disconnected</div>
+    <div class="button-group">
+        <button onclick="startReader()">Start Reader</button>
+        <button onclick="stopReader()">Stop Reader</button>
+        <button onclick="getTags()">Get Tags</button>
+        <button onclick="clearTags()">Clear Tags</button>
+        <button onclick="getState()">Show state</button>
+        <button onclick="getReaderStatus()">Show status</button>
+    </div>
+
+    <h3>Tag Data:</h3>
+    <pre id="tagList">No tags yet...</pre>
+</body>
+
+</html>
