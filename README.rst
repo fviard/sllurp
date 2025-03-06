@@ -22,6 +22,7 @@ with not much effort to other LLRP-compatible readers:
 - Impinj Speedway Revolution (R220, R420)
 - Impinj Speedway xPortal
 - Motorola MC9190-Z (handheld)
+- Zebra Fixed RFID Reader (FX7500, FX9600)
 
 File an issue on GitHub_ if you would like help getting another kind of reader
 to work.
@@ -180,7 +181,7 @@ command-line option to ``sllurp``.  You can log to a logfile with the ``-l
   import logging
   logging.getLogger('sllurp').setLevel(logging.DEBUG)
 
-.. _GitHub: https://github.com/ransford/sllurp/
+.. _GitHub: https://github.com/sllurp/sllurp/
 .. _guide: https://www.chiark.greenend.org.uk/~sgtatham/bugs.html
 
 Known Issues
