@@ -163,19 +163,17 @@ class LLRPMessage(object):
 
 
 class C1G2TargetTag(object):
-    def __init__(self, MB=0, Pointer=0, MaskBitCount=0, TagMask=b'',
-                 DataBitCount=0, TagData=b''):
+    def __init__(self, MB=0, Pointer=0, TagMask='', TagData=''):
         self.MB = MB
         self.Match = 1
         self.Pointer = Pointer
-        self.MaskBitCount = MaskBitCount
         self.TagMask = TagMask
-        self.DataBitCount = DataBitCount
         self.TagData = TagData
 
 
 class C1G2OpSpec(object):
     pass
+
 
 class C1G2Read(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, WordPtr=0,
@@ -186,6 +184,7 @@ class C1G2Read(C1G2OpSpec):
         self.MB = MB
         self.WordPtr = WordPtr
         self.WordCount = WordCount
+
 
 class C1G2Write(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, WordPtr=0,
@@ -198,10 +197,12 @@ class C1G2Write(C1G2OpSpec):
         self.WriteDataWordCount = WriteDataWordCount
         self.WriteData = WriteData
 
+
 class C1G2Kill(C1G2OpSpec):
     def __init__(self, OpSpecID=0, KillPassword=0):
         self.OpSpecID = OpSpecID
         self.KillPassword = KillPassword
+
 
 class C1G2Recommission(C1G2OpSpec):
     def __init__(self, OpSpecID=0, KillPassword=0, Flag3SB=False,
@@ -213,6 +214,7 @@ class C1G2Recommission(C1G2OpSpec):
         self.Flag2SB = Flag2SB
         self.FlagLSB = FlagLSB
 
+
 class C1G2LockPayload(object):
     def __init__(self, Privilege, DataField):
         if Privilege < 0 or Privilege > 3:
@@ -222,6 +224,7 @@ class C1G2LockPayload(object):
 
         self.Privilege = Privilege
         self.DataField = DataField
+
 
 class C1G2Lock(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, LockPayload=None):
@@ -233,6 +236,7 @@ class C1G2Lock(C1G2OpSpec):
             LockPayload = [LockPayload]
         self.LockPayload = LockPayload
 
+
 class C1G2BlockErase(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, WordPtr=0,
                  WriteCount=0):
@@ -242,6 +246,7 @@ class C1G2BlockErase(C1G2OpSpec):
         self.MB = MB
         self.WordPtr = WordPtr
         self.WriteCount = WriteCount
+
 
 class C1G2BlockWrite(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, WordPtr=0,
@@ -254,6 +259,7 @@ class C1G2BlockWrite(C1G2OpSpec):
         self.WriteDataWordCount = WriteDataWordCount
         self.WriteData = WriteData
 
+
 class C1G2BlockPermalock(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, BlockPtr=0,
                  BlockMaskWordCount=0, BlockMask=b''):
@@ -264,6 +270,7 @@ class C1G2BlockPermalock(C1G2OpSpec):
         self.BlockPtr = BlockPtr
         self.BlockMaskWordCount = BlockMaskWordCount
         self.BlockMask = BlockMask
+
 
 class C1G2GetBlockPermalockStatus(C1G2OpSpec):
     def __init__(self, OpSpecID=0, AccessPassword=0, MB=0, BlockPtr=0,
@@ -960,9 +967,7 @@ class LLRPClient(object):
                 'MB': target.MB,
                 'M': target.Match,
                 'Pointer': target.Pointer,
-                'MaskBitCount': target.MaskBitCount,
                 'TagMask': target.TagMask,
-                'DataBitCount': target.DataBitCount,
                 'TagData': target.TagData
             })
 

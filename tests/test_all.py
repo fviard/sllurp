@@ -243,11 +243,6 @@ class TestEncodings(unittest.TestCase):
         flags = int(binascii.hexlify(data[4:]), 16) >> 6
         self.assertEqual(flags, 0b0001011110)
 
-    def test_encode_bitstring(self):
-        eb = sllurp.llrp_proto.encode_bitstring
-        self.assertEqual(eb(b'\x41\x42\x43', 6), b'ABC\x00\x00\x00')
-        self.assertEqual(eb(b'\x41\x42\x43', 2), b'ABC')
-
 
 class TestMessageStruct(unittest.TestCase):
     s = sllurp.llrp_proto.Message_struct

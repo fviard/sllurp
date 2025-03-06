@@ -621,6 +621,24 @@ def encode_all_parameters(par_dict, param_info=None, data=None, par_name=None):
     return b''.join(data_list)
 
 
+def hex_to_bit_array(data):
+    """Transform a hexadecimal string into a LLRP valid bit array
+
+    Bit arrays are aligned to the most significant bit. Bit arrays are padded to an octet boundary.
+    Warning:
+    """
+    if not data:
+        return 0, b''
+
+    bitcount = len(data) * 4
+    # check for odd numbered length hexstring
+    if len(data) % 2 != 0:
+        # pad with zero
+        data += '0'
+
+    return bitcount, unhexlify(data)
+
+
 # 16.1.1 GET_READER_CAPABILITIES
 Message_struct['GET_READER_CAPABILITIES'] = {
     'type': 1,
@@ -1698,7 +1716,6 @@ def encode_AccessCommand(par, param_info):
 Param_struct['AccessCommand'] = {
     'type': 209,
     'fields': [
-
         # Virtual parameter to have one of the specifically allowed parameters for TagSpec
         'TagSpecParameter',
         # Virtual parameter to have an ordered list of OpSpec
@@ -1717,24 +1734,21 @@ Param_struct['C1G2TagSpec'] = {
 }
 
 
-def encode_bitstring(bstr, length_bytes):
-    padding = b'\x00' * (length_bytes - len(bstr))
-    return bstr + padding
-
-
 def encode_C1G2TargetTag(par, param_info):
+    mask_bitcount, tag_mask = hex_to_bit_array(par['TagMask'])
+    data_bitcount, tag_data = hex_to_bit_array(par['TagData'])
+
     MB_M_byte = (int(par['MB']) << 6) | (par['M'] and (1 << 5) or 0)
+
     data = [ubyte_ushort_ushort_pack(MB_M_byte,
                                      int(par['Pointer']),
-                                     int(par['MaskBitCount']))]
-    if int(par['MaskBitCount']):
-        numBytes = ((par['MaskBitCount'] - 1) // 8) + 1
-        data.append(encode_bitstring(par['TagMask'], numBytes))
+                                     mask_bitcount)]
+    if mask_bitcount:
+        data.append(tag_mask)
 
-    data.append(ushort_pack(int(par['DataBitCount'])))
-    if int(par['DataBitCount']):
-        numBytes = ((par['DataBitCount'] - 1) // 8) + 1
-        data.append(encode_bitstring(par['TagData'], numBytes))
+    data.append(ushort_pack(data_bitcount))
+    if data_bitcount:
+        data.append(tag_data)
 
     return b''.join(data)
 
@@ -2445,21 +2459,16 @@ Param_struct['C1G2Filter'] = {
     'encode': encode_C1G2Filter
 }
 
+
 # 16.3.1.2.1.1.1 C1G2TagInventoryMask Parameter
 def encode_C1G2TagInventoryMask(par, param_info):
-    tag_mask = par['TagMask']
-    maskbitcount = len(tag_mask) * 4
-    # check for odd numbered length hexstring
-    if len(tag_mask) % 2 != 0:
-        # pad with zero
-        tag_mask += '0'
-
+    tag_mask_bitcount, tag_mask = hex_to_bit_array(par['TagMask'])
     data = ubyte_ushort_ushort_pack(par['MB'] << 6,
                                     par['Pointer'],
-                                    maskbitcount)
-    if maskbitcount:
-        data += unhexlify(tag_mask)
+                                    tag_mask_bitcount)
+    data += tag_mask
     return data
+
 
 Param_struct['C1G2TagInventoryMask'] = {
     'type': 332,
@@ -2471,6 +2480,7 @@ Param_struct['C1G2TagInventoryMask'] = {
     ],
     'encode': encode_C1G2TagInventoryMask
 }
+
 
 # 16.3.1.2.1.2 C1G2RFControl Parameter
 Param_struct['C1G2RFControl'] = {
